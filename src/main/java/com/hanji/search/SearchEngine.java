@@ -19,7 +19,12 @@ public class SearchEngine extends HttpServlet{
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
         response.setContentType("text/plain");
         response.setCharacterEncoding("UTF-8");
-        doSearch(response.getWriter(), "will");
+        String query = request.getParameter("query");
+        if(query != null) {
+            doSearch(response.getWriter(), query);
+        } else {
+            response.getWriter().println(query);
+        }
     }
 
     private void doSearch(PrintWriter out, String queryString) {
