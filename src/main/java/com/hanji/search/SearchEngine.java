@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.HashSet;
 
 /**
  * @author Akash Eldo (axe1412)
@@ -21,13 +22,16 @@ public class SearchEngine extends HttpServlet{
         response.setCharacterEncoding("UTF-8");
         String query = request.getParameter("query");
         if(query != null) {
-            doSearch(response.getWriter(), query);
+            response.getWriter().println(doSearch(response.getWriter(), query));
         } else {
-            response.getWriter().println(query);
+            response.getWriter().println("No query given");
         }
     }
 
-    private void doSearch(PrintWriter out, String queryString) {
+    // Based off code from https://cloud.google.com/appengine/docs/standard/java/searc
+    private HashSet<String> doSearch(PrintWriter out, String queryString) {
+        HashSet<String> ids = new HashSet<>(); // HashSet to prevent duplicates
+
         final int maxRetry = 3;
         int attempts = 0;
         int delay = 2;
@@ -40,6 +44,7 @@ public class SearchEngine extends HttpServlet{
                     // handle results
                     out.print("id: " + document.getOnlyField("id").getText());
                     out.println(", def: " + document.getFields("definition"));
+                    ids.add(document.getOnlyField("id").getText());
                 }
             } catch (SearchException e) {
                 if (StatusCode.TRANSIENT_ERROR.equals(e.getOperationResult().getCode())
@@ -58,6 +63,8 @@ public class SearchEngine extends HttpServlet{
             }
             break;
         }
+
+        return ids;
     }
 
     private Index getIndex() {
