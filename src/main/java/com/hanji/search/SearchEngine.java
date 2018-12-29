@@ -1,6 +1,7 @@
 package com.hanji.search;
 
 import com.google.appengine.api.search.*;
+import org.json.JSONObject;
 
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -22,14 +23,15 @@ public class SearchEngine extends HttpServlet{
         response.setCharacterEncoding("UTF-8");
         String query = request.getParameter("query");
         if(query != null) {
-            response.getWriter().println(doSearch(response.getWriter(), query));
+            String s = JSONObject.valueToString(doSearch(query));
+            response.getWriter().println(s);
         } else {
             response.getWriter().println("No query given");
         }
     }
 
     // Based off code from https://cloud.google.com/appengine/docs/standard/java/searc
-    private HashSet<String> doSearch(PrintWriter out, String queryString) {
+    private HashSet<String> doSearch(String queryString) {
         HashSet<String> ids = new HashSet<>(); // HashSet to prevent duplicates
 
         final int maxRetry = 3;
@@ -42,8 +44,6 @@ public class SearchEngine extends HttpServlet{
                 // Iterate over the documents in the results
                 for (ScoredDocument document : results) {
                     // handle results
-                    out.print("id: " + document.getOnlyField("id").getText());
-                    out.println(", def: " + document.getFields("definition"));
                     ids.add(document.getOnlyField("id").getText());
                 }
             } catch (SearchException e) {

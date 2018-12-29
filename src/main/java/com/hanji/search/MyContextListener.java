@@ -15,7 +15,7 @@ public class MyContextListener implements ServletContextListener {
 
     @Override
     public void contextInitialized(ServletContextEvent sce) {
-        System.out.println("Deleted: " + clearIndex() + " documents from index");
+        //System.out.println("Deleted: " + clearIndex() + " documents from index");
         Database db = new Database();
 
         ArrayList<Map<String,Object>> data = db.getAllDocs();

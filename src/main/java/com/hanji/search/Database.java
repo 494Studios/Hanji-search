@@ -48,8 +48,8 @@ public class Database {
     public ArrayList<Map<String,Object>> getAllDocs(){
         ArrayList<Map<String,Object>> docs = new ArrayList<>();
 
-        //asynchronously retrieve all documents
-        ApiFuture<QuerySnapshot> future = db.collection("words").get();
+        //asynchronously retrieve all documents that haven't been indexed already
+        ApiFuture<QuerySnapshot> future = db.collection("words").whereEqualTo("indexed",false).get();
         try {
             // future.get() blocks on response
             List<QueryDocumentSnapshot> documents = future.get().getDocuments();
@@ -59,6 +59,7 @@ public class Database {
                 Map<String,Object> map = document.getData();
                 map.put("id",document.getId());
                 docs.add(map);
+                document.getReference().update("indexed",true).get(); // this document has been indexed
             }
         }catch (ExecutionException | InterruptedException e){
             e.printStackTrace();
@@ -72,5 +73,19 @@ public class Database {
         Map<String,Object> map = documentSnapshot.getData();
         map.put("id",documentSnapshot.getId());
         return map;
+    }
+
+    // Use to clear index for testing
+    public static void main(String[] args){
+        ApiFuture<QuerySnapshot> query = new Database().db.collection("words").get();
+        try {
+            List<QueryDocumentSnapshot> documents = query.get().getDocuments();
+            for (QueryDocumentSnapshot document : documents) {
+                document.getReference().update("indexed",false).get(); // this document has been indexed
+                System.out.println(document.getId());
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 }
