@@ -23,7 +23,7 @@ import java.util.concurrent.ExecutionException;
  */
 public class Database {
 
-    private static Firestore db = null;
+    public static Firestore db = null;
 
     public Database() {
         if (db == null) {
@@ -59,13 +59,26 @@ public class Database {
                 Map<String,Object> map = document.getData();
                 map.put("id",document.getId());
                 docs.add(map);
-                document.getReference().update("indexed",true).get(); // this document has been indexed
+                //document.getReference().update("indexed",true).get(); // this document has been indexed
             }
         }catch (ExecutionException | InterruptedException e){
             e.printStackTrace();
         }
         return docs;
     }
+
+    public void markDocAsIndexed(String id){
+        //asynchronously retrieve all documents that haven't been indexed already
+        ApiFuture<DocumentSnapshot> future = db.collection("words").document(id).get();
+        try {
+            // future.get() blocks on response
+            DocumentSnapshot document = future.get();
+            document.getReference().update("indexed",true).get(); // this document has been indexed
+        }catch (ExecutionException | InterruptedException e){
+            e.printStackTrace();
+        }
+    }
+
 
     public Map<String,Object> fetchDoc(String id) throws InterruptedException,ExecutionException {
         ApiFuture<DocumentSnapshot> query = Database.db.collection("words").document(id).get();

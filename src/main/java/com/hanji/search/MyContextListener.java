@@ -13,11 +13,12 @@ import java.util.Map;
  */
 public class MyContextListener implements ServletContextListener {
 
+    Database db;
+
     @Override
     public void contextInitialized(ServletContextEvent sce) {
         //System.out.println("Deleted: " + clearIndex() + " documents from index");
-        Database db = new Database();
-
+        db = new Database();
         ArrayList<Map<String,Object>> data = db.getAllDocs();
         System.out.println("Fetched " + data.size() + " docs");
         int count = 1;
@@ -52,7 +53,7 @@ public class MyContextListener implements ServletContextListener {
     }
 
     // From https://cloud.google.com/appengine/docs/standard/java/search/
-    private static void indexADocument(String indexName, Document document) throws InterruptedException {
+    private void indexADocument(String indexName, Document document) throws InterruptedException {
         IndexSpec indexSpec = IndexSpec.newBuilder().setName(indexName).build();
         Index index = SearchServiceFactory.getSearchService().getIndex(indexSpec);
 
@@ -62,6 +63,14 @@ public class MyContextListener implements ServletContextListener {
         while (true) {
             try {
                 index.put(document);
+
+                // Getting id
+                String id = null;
+                for(Field  f: document.getFields("id")){
+                    id = f.getText();
+                }
+                db.markDocAsIndexed(id);
+
             } catch (PutException e) {
                 if (StatusCode.TRANSIENT_ERROR.equals(e.getOperationResult().getCode())
                         && ++attempts < maxRetry) { // retrying
