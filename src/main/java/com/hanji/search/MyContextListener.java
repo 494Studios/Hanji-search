@@ -4,6 +4,8 @@ import com.google.appengine.api.search.*;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -41,6 +43,12 @@ public class MyContextListener implements ServletContextListener {
         ArrayList<String> definitions = (ArrayList<String>) data.get("definitions");
         for (String def : definitions) {
             builder.addField(Field.newBuilder().setName("definition").setText(def));
+        }
+
+        try {
+            builder.setId(URLEncoder.encode(data.get("id").toString(),"UTF-8"));
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
         }
         Document doc = builder.build();
 

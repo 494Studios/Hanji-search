@@ -23,7 +23,7 @@ import java.util.concurrent.ExecutionException;
  */
 public class Database {
 
-    public static Firestore db = null;
+    private static Firestore db = null;
 
     public Database() {
         if (db == null) {
