@@ -22,30 +22,46 @@ public class SearchEngine extends HttpServlet{
         response.setContentType("text/plain");
         response.setCharacterEncoding("UTF-8");
         String query = request.getParameter("query");
+        String cursor = request.getParameter("cursor");
+        System.out.println(query);
+
         if(query != null) {
-            String s = JSONObject.valueToString(doSearch(query));
+            String s = doSearch(query, cursor).toString();
             response.getWriter().println(s);
         } else {
             response.getWriter().println("No query given");
         }
     }
 
-    // Based off code from https://cloud.google.com/appengine/docs/standard/java/searc
-    private HashSet<String> doSearch(String queryString) {
+    // Based off code from https://cloud.google.com/appengine/docs/standard/java/search
+    private JSONObject doSearch(String queryString, String cursorString) {
         HashSet<String> ids = new HashSet<>(); // HashSet to prevent duplicates
 
         final int maxRetry = 3;
         int attempts = 0;
         int delay = 2;
+        Cursor cursor;
+        if(cursorString == null){
+            cursor = Cursor.newBuilder().build();
+            System.out.println("cursor:" + cursor.toWebSafeString());
+        } else {
+            cursor = Cursor.newBuilder().build(cursorString);
+        }
+
+        Cursor returnCursor;
         while (true) {
             try {
-                Results<ScoredDocument> results = getIndex().search(queryString);
+                QueryOptions options = QueryOptions.newBuilder().setCursor(cursor).build();
+                Query query = Query.newBuilder().setOptions(options).build(queryString);
+                Results<ScoredDocument> results = getIndex().search(query);
 
                 // Iterate over the documents in the results
                 for (ScoredDocument document : results) {
                     // handle results
                     ids.add(document.getOnlyField("id").getText());
                 }
+
+                returnCursor = results.getCursor();
             } catch (SearchException e) {
                 if (StatusCode.TRANSIENT_ERROR.equals(e.getOperationResult().getCode())
                         && ++attempts < maxRetry) {
@@ -64,7 +80,13 @@ public class SearchEngine extends HttpServlet{
             break;
         }
 
-        return ids;
+        JSONObject jo = new JSONObject();
+        if(returnCursor != null) {
+            jo.put("cursor", returnCursor.toWebSafeString());
+        }
+        jo.put("results", ids);
+
+        return jo;
     }
 
     private Index getIndex() {
