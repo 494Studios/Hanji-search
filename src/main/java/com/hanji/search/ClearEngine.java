@@ -13,8 +13,8 @@ import java.util.List;
 /**
  * @author Akash Eldo (axe1412)
  */
-@WebServlet(name = "IndexerEngine", value = "/index")
-public class IndexerEngine extends HttpServlet {
+@WebServlet(name = "ClearEngine", value = "/clear")
+public class ClearEngine extends HttpServlet {
 
     public static final String INDEX_NAME = "words";
 
@@ -53,7 +53,7 @@ public class IndexerEngine extends HttpServlet {
     }
 
     private Index getIndex() {
-        IndexSpec indexSpec = IndexSpec.newBuilder().setName(IndexerEngine.INDEX_NAME).build();
+        IndexSpec indexSpec = IndexSpec.newBuilder().setName(ClearEngine.INDEX_NAME).build();
         return SearchServiceFactory.getSearchService().getIndex(indexSpec);
     }
 }

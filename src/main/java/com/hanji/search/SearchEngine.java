@@ -8,7 +8,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.HashSet;
 
 /**
@@ -90,7 +89,7 @@ public class SearchEngine extends HttpServlet{
     }
 
     private Index getIndex() {
-        IndexSpec indexSpec = IndexSpec.newBuilder().setName(IndexerEngine.INDEX_NAME).build();
+        IndexSpec indexSpec = IndexSpec.newBuilder().setName(ClearEngine.INDEX_NAME).build();
         return SearchServiceFactory.getSearchService().getIndex(indexSpec);
     }
 }
