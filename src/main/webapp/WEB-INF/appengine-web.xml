@@ -7,7 +7,6 @@
     </system-properties>
     <instance-class>F2</instance-class>
     <automatic-scaling>
-        <min-instances>1</min-instances>
         <max-instances>1</max-instances>
     </automatic-scaling>
 </appengine-web-app>
